@@ -1,6 +1,9 @@
 const Discord = require('discord.js');
 const Client = new Discord.Client();
-const {prefix, token} = require('./config.json');
+
+require('dotenv').config()
+
+const token = process.env.TOKEN;
 
 const http = require('http');
 const express = require('express');
@@ -18,7 +21,8 @@ server.listen(port, '127.0.0.1', () => {
   console.log('Listening at port 3000');
 });
 
-/*Client.once('ready', () => {
+/*
+Client.once('ready', () => {
   let date = new Date().toISOString()
     .replace(/T/, ' ')
     .replace(/\..+/,'');
