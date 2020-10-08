@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>HTTP POST Requests</title>
+    <base target="_top">
+  </head>
+  <body>
+    <script>
+      const data = {
+        "Timestamp": '10/23/20 23:54:28',
+        "Q1": 'John D.',
+        "Q2": 'EL GOBLINO#1148',
+        "Q3": 'Orangeview',
+        "Q4": '8th Grade',
+        "Q5": ['Honors', 'Regulars'],
+        "Q6": ['Gamers']
+      };
+
+      const options = {
+        method : "POST",
+        redirect: "follow",
+        headers: {
+          "Content-Type" : "application/json",
+        },
+        body : JSON.stringify(data)
+      };
+      
+      fetch('/request.html', options)
+        .then(res => {
+          console.log(`statusCode: ${res.status}`);
+          if (res.status == 200) {
+            window.location = res.url;
+          };          
+        });
+    </script>
+    <h1>Processing request. . .</h1>
+  </body>
+</html>
