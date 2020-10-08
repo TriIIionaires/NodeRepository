@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
+require('dotenv').config()
 
 const { GoogleSpreadsheet } = require('google-spreadsheet');
-const creds = require('./client_secret.json');
   
 async function AcceptUser(data, member) {
     const giveRoles = [];
@@ -24,7 +24,7 @@ async function AcceptUser(data, member) {
       
       if (i == (giveRoles.length-1)) {
         await member.setNickname(data.Q1); 
-      }''
+      };
     };
 };
 
@@ -36,8 +36,8 @@ async function DeclineUser(member) {
 async function AddRow(data) {
   const doc = new GoogleSpreadsheet('1CFbXkv6bXd8-evYZxxeT1uXJ6suk74qV6K9y3ZgngXU');
   await doc.useServiceAccountAuth({
-    client_email: creds.client_email,
-    private_key: creds.private_key,
+    client_email: process.env.CLIENT_EMAIL,
+    private_key: process.env.PRIVATE_KEY
   });
 
   await doc.loadInfo();
