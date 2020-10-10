@@ -1,36 +1,36 @@
 const Discord = require('discord.js');
-require('dotenv').config()
+require('dotenv').config();
 
 const { GoogleSpreadsheet } = require('google-spreadsheet');
   
 async function AcceptUser(data, member) {
-    const giveRoles = [];
-    giveRoles.push('Verified');
-    giveRoles.push(`${data.Q3} Student`);
+  const giveRoles = [];
+  giveRoles.push('Verified');
+  giveRoles.push(`${data.Q3} Student`);
 
-    if (data.Q6) {
-      for (let i = 0; i < data.Q6.length; i++) {
-        giveRoles.push(data.Q6[i]);
-      };
+  if (data.Q6) {
+    for (let i = 0; i < data.Q6.length; i++) {
+      giveRoles.push(data.Q6[i]);
     };
+  };
 
-    for (let i = 0; i < data.Q5.length; i++) {
-      giveRoles.push(data.Q5[i]);
-    };
+  for (let i = 0; i < data.Q5.length; i++) {
+    giveRoles.push(data.Q5[i]);
+  };
 
-    for (let i = 0; i < giveRoles.length; i++) {
-      giveRoles[i] = await member.guild.roles.cache.find(role => role.name === giveRoles[i]);
-      await member.roles.add(`${giveRoles[i].id}`);
-      
-      if (i == (giveRoles.length-1)) {
-        await member.setNickname(data.Q1); 
-      };
+  for (let i = 0; i < giveRoles.length; i++) {
+    giveRoles[i] = await member.guild.roles.cache.find(role => role.name === giveRoles[i]);
+    await member.roles.add(`${giveRoles[i].id}`);
+    
+    if (i == (giveRoles.length-1)) {
+      await member.setNickname(data.Q1); 
     };
+  };
 };
 
 async function DeclineUser(member) {
-    await member.user.send('Our team has rejected your verification request. Please submit a new request.')
-      .catch(console.error);
+  await member.user.send('Our team has rejected your verification request. Please submit a new request.')
+    .catch(console.error);
 };
 
 async function AddRow(data) {
@@ -61,8 +61,8 @@ async function AddRow(data) {
 async function UpdateRow(row, status, admin) {
   const doc = new GoogleSpreadsheet('1CFbXkv6bXd8-evYZxxeT1uXJ6suk74qV6K9y3ZgngXU');
   await doc.useServiceAccountAuth({
-    client_email: creds.client_email,
-    private_key: creds.private_key,
+    client_email: process.env.CLIENT_EMAIL,
+    private_key: process.env.PRIVATE_KEY,
   });
 
   await doc.loadInfo();
@@ -80,14 +80,6 @@ async function UpdateRow(row, status, admin) {
   await cellAdmin.save();
 };
 
-function FilterUser(user) {
-  if (user === undefined) {
-    return false;
-  } else {
-    return true;
-  }
-};
-
 function FilterName(name) {
   if(name.indexOf(' ') >= 0){
     lastname = name.charAt(name.indexOf(' ')+1).toUpperCase() + '.';
@@ -102,49 +94,35 @@ function FilterName(name) {
 };
 
 function FindRoles(array, comma) {
-    let roles;
+  let roles;
 
-    for (let role of array) {
-        if (roles !== undefined) {
-          if (comma) {
-            roles = `${roles}, ${role}`
-          } else {
-            roles = `${roles}\n${role}`;
-          };         
+  for (let role of array) {
+      if (roles !== undefined) {
+        if (comma) {
+          roles = `${roles}, ${role}`
         } else {
-          roles = `${role}`;
-        };
-    };
-    return roles;
+          roles = `${roles}\n${role}`;
+        };         
+      } else {
+        roles = `${role}`;
+      };
+  };
+  return roles;
 };
 
 async function postHandler (req, res, Client) {
   console.log(`HTTP POST REQUEST\nstatusCode: ${res.statusCode}`);
-  res.redirect('http://localhost:3000/index.html');
+  res.redirect('http://localhost:3000/');
 
   const data = req.body;
-  const channel = await Client.channels.cache.get('741549843792527360');
+  const channel = await Client.channels.cache.get('764322751620055040');
+  const logs = await Client.channels.cache.get('764322768908845097');
   await channel.guild.members.fetch();
   const user = await Client.users.cache.find(user => user.tag == data.Q2);
   const member = await channel.guild.members.cache.get(user.id);
   const name = FilterName(data.Q1);
 
-  if (FilterUser(user) === false && name === false ) {
-    const LogEmbed = new Discord.MessageEmbed()
-      .setColor('#ff470f')
-      .setDescription(`<:smooth_cross:762482293847490561> **${data.Q2} was not found and ${data.Q1} is not a valid name**`);
-    channel.send(LogEmbed);
-  } else if (FilterUser(user) === false) {
-    const LogEmbed = new Discord.MessageEmbed()
-      .setColor('#ff470f')
-      .setDescription(`<:smooth_cross:762482293847490561> **${data.Q2} was not found**`);
-    channel.send(LogEmbed);
-  } else if (name === false) {
-    const LogEmbed = new Discord.MessageEmbed()
-      .setColor('#ff470f')
-      .setDescription(`<:smooth_cross:762482293847490561> **${data.Q1} is not a valid name**`);
-    channel.send(LogEmbed);
-  } else {
+  if (user && name) {
     const RequestEmbed = new Discord.MessageEmbed()
       .setColor('#4A90E2')
       .setTitle('Verification Request')
@@ -168,7 +146,7 @@ async function postHandler (req, res, Client) {
       if (reaction.emoji.name == 'smooth_checkmark') {
         RequestEmbed
             .setColor('#43b581')
-            .setDescription(`User: **<@!${user.id}>**\nName: **${name}**\nStatus: **Accepted by <@${admin.id}>**`);
+            .setDescription(`User: **<@!${user.id}>**\nName: **${name}**\nStatus: **Accepted by <@!${admin.id}>**`);
         AcceptUser(data, member);
         UpdateRow(row, 'Accepted', admin.tag);
         message.reactions.removeAll()
@@ -177,7 +155,7 @@ async function postHandler (req, res, Client) {
       } else if (reaction.emoji.name == 'smooth_cross') {
         RequestEmbed
           .setColor('#ff470f')
-          .setDescription(`User: **<@!${user.id}>**\nName: **${name}**\nStatus: **Declined by <@${admin.id}>**`);
+          .setDescription(`User: **<@!${user.id}>**\nName: **${name}**\nStatus: **Declined by <@!${admin.id}>**`);
         DeclineUser(member);
         UpdateRow(row, 'Declined', admin.tag);
         message.reactions.removeAll()
@@ -186,6 +164,22 @@ async function postHandler (req, res, Client) {
       };
     };
     message.awaitReactions(filter);
+    return;
+  } else if (user === undefined && name === false ) {
+    const LogEmbed = new Discord.MessageEmbed()
+      .setColor('#ff470f')
+      .setDescription(`<:smooth_cross:762482293847490561> **${data.Q2} was not found and ${data.Q1} is not a valid name**`);
+    logs.send(LogEmbed);
+  } else if (user === undefined) {
+    const LogEmbed = new Discord.MessageEmbed()
+      .setColor('#ff470f')
+      .setDescription(`<:smooth_cross:762482293847490561> **${data.Q2} was not found**`);
+    logs.send(LogEmbed);
+  } else if (name === false) {
+    const LogEmbed = new Discord.MessageEmbed()
+      .setColor('#ff470f')
+      .setDescription(`<:smooth_cross:762482293847490561> **${data.Q1} is not a valid name**`);
+    logs.send(LogEmbed);
   };
 };
 

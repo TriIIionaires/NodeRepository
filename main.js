@@ -23,11 +23,17 @@ Client.once('ready', () => {
 
 Client.login(token);
 
-app.use(express.static('public'));
-
 app.use(express.urlencoded({extended: false}));
 
 app.use(express.json());
+
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
+app.get('/request/post', (req, res) => {
+  res.sendFile(__dirname + '/public/request.html');
+});
 
 app.post('/request.html', async function (req, res) {
   postHandler(req, res, Client);
